@@ -1,9 +1,9 @@
 resource "kubernetes_deployment" "tiller_deploy" {
   metadata {
     name      = "tiller-deploy"
-    namespace = "${var.namespace}"
+    namespace = var.namespace
 
-    labels {
+    labels = {
       name = "tiller"
       app  = "helm"
     }
@@ -13,7 +13,7 @@ resource "kubernetes_deployment" "tiller_deploy" {
     replicas = 1
 
     selector {
-      match_labels {
+      match_labels = {
         name = "tiller"
         app  = "helm"
       }
@@ -21,7 +21,7 @@ resource "kubernetes_deployment" "tiller_deploy" {
 
     template {
       metadata {
-        labels {
+        labels = {
           name = "tiller"
           app  = "helm"
         }
@@ -29,7 +29,7 @@ resource "kubernetes_deployment" "tiller_deploy" {
 
       spec {
         container {
-          image             = "${var.tiller_image}"
+          image             = var.tiller_image
           name              = "tiller"
           image_pull_policy = "IfNotPresent"
           command           = ["/tiller"]
@@ -37,7 +37,7 @@ resource "kubernetes_deployment" "tiller_deploy" {
 
           env {
             name  = "TILLER_NAMESPACE"
-            value = "${var.namespace}"
+            value = var.namespace
           }
 
           env {
@@ -128,20 +128,20 @@ resource "kubernetes_deployment" "tiller_deploy" {
 
 resource "kubernetes_service_account" "tiller" {
   metadata {
-    name      = "${var.service_account}"
-    namespace = "${var.namespace}"
+    name      = var.service_account
+    namespace = var.namespace
   }
 }
 
 resource "kubernetes_cluster_role_binding" "tiller" {
   metadata {
-    name = "${kubernetes_service_account.tiller.metadata.0.name}"
+    name = kubernetes_service_account.tiller.metadata[0].name
   }
 
   subject {
     kind      = "ServiceAccount"
-    name      = "${kubernetes_service_account.tiller.metadata.0.name}"
-    namespace = "${kubernetes_service_account.tiller.metadata.0.namespace}"
+    name      = kubernetes_service_account.tiller.metadata[0].name
+    namespace = kubernetes_service_account.tiller.metadata[0].namespace
     api_group = ""
   }
 
